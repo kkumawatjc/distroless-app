@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: distroless-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: distroless-app
+  template:
+    metadata:
+      labels:
+        app: distroless-app
+    spec:
+      containers:
+        - name: distroless-app
+          image: kkumawatjc/distroless-app:latest
+          ports:
+            - containerPort: 8080
+          resources:
+            limits:
+              memory: "128Mi"
+              cpu: "250m"
+          lifecycle:
+            preStop:
+              exec:
+                command: ["/bin/sh", "-c", "command -v sleep >/dev/null 2>&1 && sleep 3 || true"]
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: distroless-app-service
+spec:
+  selector:
+    app: distroless-app
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8080
+  type: ClusterIP
